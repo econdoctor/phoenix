@@ -1,0 +1,235 @@
+<?php
+session_start();
+if(isset($_SESSION['phoenix_user_id'])){
+$_SESSION['phoenix_user_id'] = $_SESSION['phoenix_user_id'];
+$user_id = $_SESSION['phoenix_user_id'];}
+if(!isset($_SESSION['phoenix_user_id'])){
+header("Location: ../login.php");
+exit();}
+include "../connectdb.php";
+if($mysqli -> connect_errno){
+echo "Failed to connect to MySQL: " . $mysqli -> connect_error;
+exit();}
+$sql = "SELECT * FROM phoenix_users WHERE user_id ='".$user_id."'";
+$res = $mysqli -> query($sql);
+$data = mysqli_fetch_assoc($res);
+$user_type = $data['user_type'];
+$user_active = $data['user_active'];
+$user_title = $data['user_title'];
+$user_first_name = $data['user_first_name'];
+$user_last_name = $data['user_last_name'];
+$user_name = $data['user_name'];
+if($user_type == 1){
+echo 'What are you doing here? This page is for teachers only.';
+exit();}
+$topic_id = $_GET['topic_id'];
+if(empty($topic_id)){
+echo 'Missing information about the topic.';
+exit();}
+$sql3 = "SELECT * FROM phoenix_topics WHERE topic_id = '".$topic_id."'";
+$res3 = $mysqli -> query($sql3);
+$data3 = mysqli_fetch_assoc($res3);
+$topic_key = $data3['topic_key'];
+$unit_name = $data3['topic_unit'];
+$module_name = $data3['topic_module'];
+$topic_hidden = $data3['topic_hidden'];
+$s = $data3['topic_syllabus'];
+if($user_active == 0 && $topic_hidden == 1){
+echo 'Locked';
+exit();}
+if($s == '3'){
+$s_text = "A Level";}
+if($s == '2'){
+$s_text = "AS Level";}
+if($s == '1'){
+$s_text = "IGCSE";}
+$sql2 = "SELECT * FROM phoenix_questions WHERE question_topic_id = '".$topic_id."' AND question_repeat = '0' AND question_obsolete = '0'";
+$res2 = $mysqli -> query($sql2);
+$nr2 = mysqli_num_rows($res2);
+?>
+<!doctype html>
+<html>
+<head>
+<title>Phoenix</title>
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+<style type="text/css">
+a:link {
+text-decoration: none;
+color: #000000;
+}
+a:visited {
+text-decoration: none;
+color: #000000;
+}
+a:hover {
+text-decoration: none;
+color: #000000;
+}
+a:active {
+text-decoration: none;
+color: #000000;
+font-size: large;
+}
+body,td,th {
+color: #000000;
+font-family: "Segoe", "Segoe UI", "Gill Sans MT", "Myriad Pro", "DejaVu Sans Condensed", Helvetica, Arial, sans-serif;
+}
+body {
+background-color: #8BA57E;
+text-align: center;
+font-size: large;
+}
+input[type=submit]{
+-webkit-appearance: none;
+-moz-appearance: none;
+appearance: none;
+background-color: #033909;
+border: 2px solid black;
+padding: 10px 15px;
+color: white;
+font-weight: bold;
+font-size: 18px;
+cursor: pointer;
+width: 20%;
+border-radius: 4px;
+}
+input[type=text] {
+padding: 3px 5px;
+margin: 2px 0;
+box-sizing: border-box;
+text-align: center;
+font-weight: bold;
+font-size: 18px;
+border: 2px solid black;
+border-radius: 4px;
+width: 20%;
+}
+optgroup {
+font-size: 18px;
+}
+select {
+padding: 3px 5px;
+margin: 2px 0;
+box-sizing: border-box;
+text-align: center;
+font-weight: bold;
+font-size: 18px;
+border: 2px solid black;
+border-radius: 4px;
+}
+input, select{
+box-sizing: border-box;
+-moz-box-sizing: border-box;
+-webkit-box-sizing: border-box;
+}
+input[type=button]{
+-webkit-appearance: none;
+-moz-appearance: none;
+appearance: none;
+background-color: #033909;
+border: 2px solid black;
+padding: 10px 15px;
+color: white;
+font-weight: bold;
+font-size: 18px;
+cursor: pointer;
+width: 40%;
+border-radius: 4px;
+}
+</style>
+<script type="text/javascript">
+function showDiv() {
+var e = document.getElementById('num_q');
+if(e.style.display == 'block')
+e.style.display = 'none';
+else
+e.style.display = 'block';}
+</script>
+<script>
+function clearNumber(){
+document.getElementById('number').value = "";
+}
+</script>
+</head>
+<body>
+<table align="center" width="90%"><tbody>
+<tr>
+<td>
+<p style="text-align: right;"><img src="online.png" width="15">&nbsp;&nbsp;<b><a href="../profile.php"><?php echo $user_title.' '.$user_first_name.' '.$user_last_name.' ('.$user_name.')'; ?></a> - <a href="logout.php">Log out</a></b></p>
+</td>
+</tr>
+</tbody></table>
+<table width="80%" bgcolor="#6a855c" align="center" style="border: solid black 4px; border-radius:24px;"><tbody><tr width="95%">
+<td width="20%"><a href="main.php"><img src="home_phoenix.png" width="150" height="150"></a></td>
+<td width="80%"><p style="font-size: xx-large;"><b>PHOENIX</b></p>
+<p>
+<input type="button" name="browse" value="BROWSE" style="font-size: x-large; width: 30%; background-color: #ffc000;  color: #3b2c00; border: 3px solid black; border-radius: 12px;letter-spacing: 4px; padding: 6px 0px;" onclick="document.location.href='browse.php';"/>&nbsp;&nbsp;
+<input type="button" name="manage" value="MANAGE" style="font-size: x-large; width: 30%; background-color: #c55b11;  color: #271203; border: 3px solid black; border-radius: 12px; letter-spacing: 4px; padding: 6px 0px;" onclick="document.location.href='manage.php';"/>&nbsp;&nbsp;
+<input type="button" name="assignments" value="ASSIGNMENTS" style="font-size: x-large; width: 30%; background-color: #2f5596;  color: #0a111f; border: 3px solid black; border-radius: 12px;letter-spacing: 4px; padding: 6px 0px;" onclick="document.location.href='assign.php';"/>
+</td></tr></tbody></table>
+<p><input type="button" name="title" style="width: 20%" value="<?php echo strtoupper($s_text); ?> TOPICS" onclick="document.location.href='browse_topic.php?s=<?php echo $s; ?>';"/>
+<table width="80%" align="center" bgcolor="#000000"><tbody><tr>
+<td height="40" bgcolor="647d57"><b>COURSE</b></td>
+<td height="40" bgcolor="647d57"><b>UNIT</b></td>
+<td height="40" bgcolor="647d57"><b>TOPIC</b></td>
+</tr><tr>
+<td height="40" bgcolor="769467"><?php echo $s_text; ?></td>
+<td height="40" bgcolor="769467"><?php echo $unit_name; ?></td>
+<td height="40" bgcolor="769467"><?php echo $module_name; ?></td>
+</tr></tbody></table>
+<form action="topic_download_preview.php" method="get">
+<p><b><span style="color: #820000"><?php echo number_format($nr2); ?></span> MCQs found</b></p>
+<?php
+if($_GET['error'] == 1){
+echo '<p><b style="color: #820000;">Please fill in the information required</b></p>';}
+if($_GET['error'] == 4){
+echo '<p><b style="color: #820000;">You entered contradictory information</b></p>';}
+?>
+<p><b>Do you want to include them all?</b><br>
+<input type="radio" name="all" value='1' required <?php if($_GET['all'] == '1' || empty($_GET['all'])) { echo 'checked'; } ?> onchange="showDiv();" onclick="clearNumber();"> Yes - <input type="radio" name="all" value='2' required <?php if($_GET['all'] == '2') { echo 'checked'; } ?> onchange="showDiv();"> No</p>
+<div id="num_q" <?php if($_GET['all'] == '1' || empty($_GET['all'])) { echo 'style="display:none"'; } else { echo 'style="display:block"'; } ?>>
+<?php
+if($_GET['error'] == 2){
+echo '<p><b style="color: #820000;">Please fill in the information required</b></p>';}
+if($_GET['error'] == 3){
+echo '<p><b style="color: #820000;">The number of questions must be strictly positive</b></p>';}
+if($_GET['error'] == 5){
+echo '<p><b style="color: #820000;">The number of questions must be a strictly positive integer</b></p>';}
+if($_GET['error'] == 6){
+echo '<p><b style="color: #820000;">The number of questions cannot exceed the total number of questions available</b></p>';}
+?>
+<p><input type="text" name="number" id="number" maxlength="3" <?php if(empty($_GET['number']) || $_GET['number'] == "") { echo 'placeholder="How many then?"'; } else { echo 'value="'.$_GET['number'].'"';  } ?>   style="width: 20%"></div>
+<p><select name="order" style="width: 20%"><optgroup>
+<option value="" disabled <?php if($_GET['order'] == "") { echo 'selected'; } ?>>Order by</option>
+<option value='7' <?php if($_GET['order'] == '7') { echo 'selected'; } ?>>Randomly</option>
+<option value='3' <?php if($_GET['order'] == '3') { echo 'selected'; } ?>>Most recent first</option>
+<option value='4' <?php if($_GET['order'] == '4') { echo 'selected'; } ?>>Oldest first</option>
+<option value='5' <?php if($_GET['order'] == '5') { echo 'selected'; } ?>>Easiest first</option>
+<option value='6' <?php if($_GET['order'] == '6') { echo 'selected'; } ?>>Hardest first</option>
+</select></p>
+<p><b>Do you want to show the answer of each question?</b><br>
+<input type="radio" name="answers" value='1' required <?php if($_GET['answers'] == '1') { echo 'checked'; } ?>> Yes - <input type="radio" name="answers" value='2' required <?php if($_GET['answers'] == '2' || empty($_GET['answers'])) { echo 'checked'; } ?>> No</p>
+<p><b>Do you want to show the reference of each question?</b><br>
+<input type="radio" name="ref" value='1' required <?php if($_GET['ref'] == '1') { echo 'checked'; } ?>> Yes - <input type="radio" name="ref" value='2' required <?php if($_GET['ref'] == '2' || empty($_GET['ref'])) { echo 'checked'; } ?>> No</p>
+<p><b>Which of the following do you want to include in the document header?</b><br>
+<input type="checkbox" style="transform: scale(1.5);" name="name" value="name_yes" <?php if($_GET['sn'] == 'name_yes') { echo 'checked'; } ?>> Name - <input type="checkbox" style="transform: scale(1.5);" name="date" value="date_yes" <?php if($_GET['sd'] == 'date_yes') { echo 'checked'; } ?>> Date - <input type="checkbox" style="transform: scale(1.5);" name="score" value="score_yes" <?php if($_GET['ss'] == 'score_yes') { echo 'checked'; } ?>> Score</p>
+<input type="hidden" name="topic_id" value="<?php echo $topic_id; ?>">
+<input type="hidden" name="k" value="<?php echo $topic_key; ?>">
+<input type="submit" value="CONFIRM">
+<p>&nbsp;</p></form></body></html>
